@@ -3356,6 +3356,8 @@ struct sg_lb_stats {
 	int group_imb; /* Is there an imbalance in the group ? */
 	int group_has_capacity; /* Is there extra capacity in the group? */
 	unsigned int group_util;	/* sum utilization of group */
+	unsigned long total_cpu_time;
+	unsigned long total_run_time;
 };
 
 static unsigned long scale_rt_util(int cpu);
