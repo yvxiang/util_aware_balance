@@ -4789,7 +4789,8 @@ static inline void update_sg_lb_stats(struct lb_env *env,
 		sgs->sum_weighted_load += weighted_cpuload(i);
 
 		/* add scaled rq utilization */
-		sgs->group_util += max_cfs_util(i, 0);
+	/*	sgs->group_util += max_cfs_util(i, 0); */
+		sgs->group_util += scale_rt_util(i);
 
 		if (idle_cpu(i))
 			sgs->idle_cpus++;
@@ -4813,7 +4814,9 @@ static inline void update_sg_lb_stats(struct lb_env *env,
 	}
 
 	/* Adjust by relative CPU power of the group */
-	sgs->avg_load = (sgs->group_load*SCHED_POWER_SCALE) / group->sgp->power;
+	/*sgs->avg_load = (sgs->group_load*SCHED_POWER_SCALE) / group->sgp->power; */
+	  sgs->group_util /= sgs->sum_nu_running+1;
+	  sgs->avg_load = (sgs->group_load*sgs->group_util) / group->sgp->power;
 
 	/*
 	 * Consider the group unbalanced when the imbalance is larger
@@ -4825,7 +4828,7 @@ static inline void update_sg_lb_stats(struct lb_env *env,
 	 *      the hierarchy?
 	 */
 	if (sgs->sum_nr_running)
-		avg_load_per_task = sgs->sum_weighted_load / sgs->sum_nr_running;
+		avg_load_per_task = (sgs->sum_weighted_load * sgs->group_util) / (sgs->sum_nr_running * SCHED_POWER_SCALE);
 
 	if ((max_cpu_load - min_cpu_load) >= avg_load_per_task &&
 	    (max_nr_running - min_nr_running) > 1)
